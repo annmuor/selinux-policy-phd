@@ -11,7 +11,7 @@ restorecon -R /var/cache/jenkins; \
 
 Name:   jenkins_selinux
 Version:	1.0.5
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	SELinux policy module for jenkins
 
 Group:	System Environment/Base
@@ -46,6 +46,7 @@ install -d %{buildroot}/etc/selinux/targeted/contexts/users/
 semodule -n -i %{_datadir}/selinux/packages/jenkins.pp
 if /usr/sbin/selinuxenabled ; then
     /usr/sbin/load_policy
+    /usr/sbin/semanage port -m -p tcp -t jenkins_port_t 8080
     %relabel_files
 
 fi;
@@ -55,6 +56,7 @@ exit 0
 if [ $1 -eq 0 ]; then
     semodule -n -r jenkins
     if /usr/sbin/selinuxenabled ; then
+       /usr/sbin/semanage port -d -p tcp 8080
        /usr/sbin/load_policy
        %relabel_files
 
