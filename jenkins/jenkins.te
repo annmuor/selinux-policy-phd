@@ -90,6 +90,7 @@ auth_read_passwd(jenkins_t)
 gen_require(`type proc_t;')
 read_files_pattern(jenkins_t, proc_t, proc_t)
 search_dirs_pattern(jenkins_t, proc_t, proc_t)
+seutil_search_default_contexts(jenkins_t)
 # allows
 allow jenkins_t self:process { execmem setsched };
 allow jenkins_t self:capability { audit_write kill setgid setuid };
@@ -105,4 +106,5 @@ optional_policy(`
 	jenkins_read_cache_files(httpd_t)
 	jenkins_read_lib_files(httpd_t)
 ')
-
+# dontaudit all other file access
+dontaudit jenkins_t file_type:{file dir lnk_file} *;
