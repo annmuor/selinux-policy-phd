@@ -1,0 +1,801 @@
+
+## <summary>policy for jenkins</summary>
+
+########################################
+## <summary>
+##	Execute jenkins_exec_t in the jenkins domain.
+## </summary>
+## <param name="domain">
+## <summary>
+##	Domain allowed to transition.
+## </summary>
+## </param>
+#
+interface(`jenkins_domtrans',`
+	gen_require(`
+		type jenkins_t, jenkins_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, jenkins_exec_t, jenkins_t)
+')
+
+######################################
+## <summary>
+##	Execute jenkins in the caller domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_exec',`
+	gen_require(`
+		type jenkins_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	can_exec($1, jenkins_exec_t)
+')
+
+########################################
+## <summary>
+##	Execute jenkins server in the jenkins domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_initrc_domtrans',`
+	gen_require(`
+		type jenkins_initrc_exec_t;
+	')
+
+	init_labeled_script_domtrans($1, jenkins_initrc_exec_t)
+')
+
+########################################
+## <summary>
+##	Search jenkins cache directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_search_cache',`
+	gen_require(`
+		type jenkins_cache_t;
+	')
+
+	allow $1 jenkins_cache_t:dir search_dir_perms;
+	files_search_var($1)
+')
+
+########################################
+## <summary>
+##	Read jenkins cache files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_read_cache_files',`
+	gen_require(`
+		type jenkins_cache_t;
+	')
+
+	files_search_var($1)
+	read_files_pattern($1, jenkins_cache_t, jenkins_cache_t)
+')
+
+########################################
+## <summary>
+##	Create, read, write, and delete
+##	jenkins cache files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_manage_cache_files',`
+	gen_require(`
+		type jenkins_cache_t;
+	')
+
+	files_search_var($1)
+	manage_files_pattern($1, jenkins_cache_t, jenkins_cache_t)
+')
+
+########################################
+## <summary>
+##	Manage jenkins cache dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_manage_cache_dirs',`
+	gen_require(`
+		type jenkins_cache_t;
+	')
+
+	files_search_var($1)
+	manage_dirs_pattern($1, jenkins_cache_t, jenkins_cache_t)
+')
+
+########################################
+## <summary>
+##	Read jenkins's log files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`jenkins_read_log',`
+	gen_require(`
+		type jenkins_log_t;
+	')
+
+	logging_search_logs($1)
+	read_files_pattern($1, jenkins_log_t, jenkins_log_t)
+')
+
+########################################
+## <summary>
+##	Append to jenkins log files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_append_log',`
+	gen_require(`
+		type jenkins_log_t;
+	')
+
+	logging_search_logs($1)
+	append_files_pattern($1, jenkins_log_t, jenkins_log_t)
+')
+
+########################################
+## <summary>
+##	Manage jenkins log files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_manage_log',`
+	gen_require(`
+		type jenkins_log_t;
+	')
+
+	logging_search_logs($1)
+	manage_dirs_pattern($1, jenkins_log_t, jenkins_log_t)
+	manage_files_pattern($1, jenkins_log_t, jenkins_log_t)
+	manage_lnk_files_pattern($1, jenkins_log_t, jenkins_log_t)
+')
+
+########################################
+## <summary>
+##	Search jenkins lib directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_search_lib',`
+	gen_require(`
+		type jenkins_var_lib_t;
+	')
+
+	allow $1 jenkins_var_lib_t:dir search_dir_perms;
+	files_search_var_lib($1)
+')
+
+########################################
+## <summary>
+##	Read jenkins lib files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_read_lib_files',`
+	gen_require(`
+		type jenkins_var_lib_t;
+	')
+
+	files_search_var_lib($1)
+	read_files_pattern($1, jenkins_var_lib_t, jenkins_var_lib_t)
+')
+
+########################################
+## <summary>
+##	Manage jenkins lib files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_manage_lib_files',`
+	gen_require(`
+		type jenkins_var_lib_t;
+	')
+
+	files_search_var_lib($1)
+	manage_files_pattern($1, jenkins_var_lib_t, jenkins_var_lib_t)
+')
+
+########################################
+## <summary>
+##	Manage jenkins lib directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`jenkins_manage_lib_dirs',`
+	gen_require(`
+		type jenkins_var_lib_t;
+	')
+
+	files_search_var_lib($1)
+	manage_dirs_pattern($1, jenkins_var_lib_t, jenkins_var_lib_t)
+')
+
+
+########################################
+## <summary>
+##	All of the rules required to administrate
+##	an jenkins environment
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	Role allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`jenkins_admin',`
+	gen_require(`
+		type jenkins_t;
+		type jenkins_initrc_exec_t;
+		type jenkins_cache_t;
+		type jenkins_log_t;
+		type jenkins_var_lib_t;
+	')
+
+	allow $1 jenkins_t:process { signal_perms };
+	ps_process_pattern($1, jenkins_t)
+
+    tunable_policy(`deny_ptrace',`',`
+        allow $1 jenkins_t:process ptrace;
+    ')
+
+	jenkins_initrc_domtrans($1)
+	domain_system_change_exemption($1)
+	role_transition $2 jenkins_initrc_exec_t system_r;
+	allow $2 system_r;
+
+	files_search_var($1)
+	admin_pattern($1, jenkins_cache_t)
+
+	logging_search_logs($1)
+	admin_pattern($1, jenkins_log_t)
+
+	files_search_var_lib($1)
+	admin_pattern($1, jenkins_var_lib_t)
+	optional_policy(`
+		systemd_passwd_agent_exec($1)
+		systemd_read_fifo_file_passwd_run($1)
+	')
+')
+
+## <summary>policy for jenkins1</summary>########################################
+## <summary>
+##	Send and receive TCP traffic on the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="both" weight="10"/>
+#
+interface(`corenet_tcp_sendrecv_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	allow $1 jenkins_port_t:tcp_socket { send_msg recv_msg };
+')
+
+########################################
+## <summary>
+##	Send UDP traffic on the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="write" weight="10"/>
+#
+interface(`corenet_udp_send_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	allow $1 jenkins_port_t:udp_socket send_msg;
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to send UDP traffic on the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_udp_send_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	dontaudit $1 jenkins_port_t:udp_socket send_msg;
+')
+
+########################################
+## <summary>
+##	Receive UDP traffic on the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="read" weight="10"/>
+#
+interface(`corenet_udp_receive_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	allow $1 jenkins_port_t:udp_socket recv_msg;
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to receive UDP traffic on the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_udp_receive_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	dontaudit $1 jenkins_port_t:udp_socket recv_msg;
+')
+
+########################################
+## <summary>
+##	Send and receive UDP traffic on the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="both" weight="10"/>
+#
+interface(`corenet_udp_sendrecv_jenkins_port',`
+	corenet_udp_send_jenkins_port($1)
+	corenet_udp_receive_jenkins_port($1)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to send and receive
+##	UDP traffic on the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_udp_sendrecv_jenkins_port',`
+	corenet_dontaudit_udp_send_jenkins_port($1)
+	corenet_dontaudit_udp_receive_jenkins_port($1)
+')
+
+########################################
+## <summary>
+##	Bind TCP sockets to the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_tcp_bind_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	allow $1 jenkins_port_t:tcp_socket name_bind;
+	
+')
+
+########################################
+## <summary>
+##	Bind UDP sockets to the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_udp_bind_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	allow $1 jenkins_port_t:udp_socket name_bind;
+	
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to sbind to jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_udp_bind_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	dontaudit $1 jenkins_port_t:udp_socket name_bind;
+	
+')
+
+########################################
+## <summary>
+##	Make a TCP connection to the jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`corenet_tcp_connect_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	allow $1 jenkins_port_t:tcp_socket name_connect;
+')
+########################################
+## <summary>
+##	Do not audit attempts to make a TCP connection to jenkins port.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`corenet_dontaudit_tcp_connect_jenkins_port',`
+	gen_require(`
+		type jenkins_port_t;
+	')
+
+	dontaudit $1 jenkins_port_t:tcp_socket name_connect;
+')
+
+
+########################################
+## <summary>
+##	Send jenkins_client packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="write" weight="10"/>
+#
+interface(`corenet_send_jenkins_client_packets',`
+	gen_require(`
+		type jenkins_client_packet_t;
+	')
+
+	allow $1 jenkins_client_packet_t:packet send;
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to send jenkins_client packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_send_jenkins_client_packets',`
+	gen_require(`
+		type jenkins_client_packet_t;
+	')
+
+	dontaudit $1 jenkins_client_packet_t:packet send;
+')
+
+########################################
+## <summary>
+##	Receive jenkins_client packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="read" weight="10"/>
+#
+interface(`corenet_receive_jenkins_client_packets',`
+	gen_require(`
+		type jenkins_client_packet_t;
+	')
+
+	allow $1 jenkins_client_packet_t:packet recv;
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to receive jenkins_client packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_receive_jenkins_client_packets',`
+	gen_require(`
+		type jenkins_client_packet_t;
+	')
+
+	dontaudit $1 jenkins_client_packet_t:packet recv;
+')
+
+########################################
+## <summary>
+##	Send and receive jenkins_client packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="both" weight="10"/>
+#
+interface(`corenet_sendrecv_jenkins_client_packets',`
+	corenet_send_jenkins_client_packets($1)
+	corenet_receive_jenkins_client_packets($1)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to send and receive jenkins_client packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_sendrecv_jenkins_client_packets',`
+	corenet_dontaudit_send_jenkins_client_packets($1)
+	corenet_dontaudit_receive_jenkins_client_packets($1)
+')
+
+########################################
+## <summary>
+##	Relabel packets to jenkins_client the packet type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`corenet_relabelto_jenkins_client_packets',`
+	gen_require(`
+		type jenkins_client_packet_t;
+	')
+
+	allow $1 jenkins_client_packet_t:packet relabelto;
+')
+
+
+########################################
+## <summary>
+##	Send jenkins_server packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="write" weight="10"/>
+#
+interface(`corenet_send_jenkins_server_packets',`
+	gen_require(`
+		type jenkins_server_packet_t;
+	')
+
+	allow $1 jenkins_server_packet_t:packet send;
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to send jenkins_server packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_send_jenkins_server_packets',`
+	gen_require(`
+		type jenkins_server_packet_t;
+	')
+
+	dontaudit $1 jenkins_server_packet_t:packet send;
+')
+
+########################################
+## <summary>
+##	Receive jenkins_server packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="read" weight="10"/>
+#
+interface(`corenet_receive_jenkins_server_packets',`
+	gen_require(`
+		type jenkins_server_packet_t;
+	')
+
+	allow $1 jenkins_server_packet_t:packet recv;
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to receive jenkins_server packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_receive_jenkins_server_packets',`
+	gen_require(`
+		type jenkins_server_packet_t;
+	')
+
+	dontaudit $1 jenkins_server_packet_t:packet recv;
+')
+
+########################################
+## <summary>
+##	Send and receive jenkins_server packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <infoflow type="both" weight="10"/>
+#
+interface(`corenet_sendrecv_jenkins_server_packets',`
+	corenet_send_jenkins_server_packets($1)
+	corenet_receive_jenkins_server_packets($1)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to send and receive jenkins_server packets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <infoflow type="none"/>
+#
+interface(`corenet_dontaudit_sendrecv_jenkins_server_packets',`
+	corenet_dontaudit_send_jenkins_server_packets($1)
+	corenet_dontaudit_receive_jenkins_server_packets($1)
+')
+
+########################################
+## <summary>
+##	Relabel packets to jenkins_server the packet type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`corenet_relabelto_jenkins_server_packets',`
+	gen_require(`
+		type jenkins_server_packet_t;
+	')
+
+	allow $1 jenkins_server_packet_t:packet relabelto;
+')

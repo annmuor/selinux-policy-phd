@@ -1,0 +1,108 @@
+policy_module(jenkins, 1.0.4)
+
+########################################
+#
+# Declarations
+#
+
+type jenkins_t;
+type jenkins_exec_t;
+init_daemon_domain(jenkins_t, jenkins_exec_t)
+
+#permissive jenkins_t;
+
+type jenkins_cache_t;
+files_type(jenkins_cache_t)
+
+type jenkins_log_t;
+logging_log_file(jenkins_log_t)
+
+type jenkins_var_lib_t;
+files_type(jenkins_var_lib_t)
+
+type jenkins_port_t;
+corenet_port(jenkins_port_t)
+
+type jenkins_tmp_t;
+files_tmp_file(jenkins_tmp_t)
+
+type jenkins_var_run_t;
+files_pid_file(jenkins_var_run_t)
+
+########################################
+#
+# jenkins local policy
+#
+allow jenkins_t self:fifo_file rw_fifo_file_perms;
+allow jenkins_t self:unix_stream_socket create_stream_socket_perms;
+
+manage_dirs_pattern(jenkins_t, jenkins_cache_t, jenkins_cache_t)
+manage_files_pattern(jenkins_t, jenkins_cache_t, jenkins_cache_t)
+manage_lnk_files_pattern(jenkins_t, jenkins_cache_t, jenkins_cache_t)
+files_var_filetrans(jenkins_t, jenkins_cache_t, { dir file lnk_file })
+
+manage_dirs_pattern(jenkins_t, jenkins_log_t, jenkins_log_t)
+manage_files_pattern(jenkins_t, jenkins_log_t, jenkins_log_t)
+manage_lnk_files_pattern(jenkins_t, jenkins_log_t, jenkins_log_t)
+logging_log_filetrans(jenkins_t, jenkins_log_t, { dir file lnk_file })
+
+manage_dirs_pattern(jenkins_t, jenkins_var_lib_t, jenkins_var_lib_t)
+manage_files_pattern(jenkins_t, jenkins_var_lib_t, jenkins_var_lib_t)
+manage_lnk_files_pattern(jenkins_t, jenkins_var_lib_t, jenkins_var_lib_t)
+files_var_lib_filetrans(jenkins_t, jenkins_var_lib_t, { dir file lnk_file })
+
+domain_use_interactive_fds(jenkins_t)
+
+files_read_etc_files(jenkins_t)
+
+miscfiles_read_localization(jenkins_t)
+# network
+corenet_tcp_bind_generic_node(jenkins_t)
+corenet_udp_bind_generic_node(jenkins_t)
+allow jenkins_t self:tcp_socket create_stream_socket_perms;
+allow jenkins_t self:udp_socket create_socket_perms;
+corenet_tcp_sendrecv_generic_node(jenkins_t)
+corenet_tcp_bind_jenkins_port(jenkins_t)
+corenet_tcp_sendrecv_jenkins_port(jenkins_t)
+corenet_udp_bind_howl_port(jenkins_t)
+corenet_udp_sendrecv_howl_port(jenkins_t)
+corenet_tcp_connect_http_port(jenkins_t)
+corenet_tcp_sendrecv_http_port(jenkins_t)
+sysnet_dns_name_resolve(jenkins_t)
+# exec scripts
+corecmd_exec_bin(jenkins_t)
+corecmd_exec_shell(jenkins_t)
+# misc
+dev_read_rand(jenkins_t)
+logging_send_syslog_msg(jenkins_t)
+manage_dirs_pattern(jenkins_t, jenkins_tmp_t, jenkins_tmp_t)
+manage_files_pattern(jenkins_t, jenkins_tmp_t, jenkins_tmp_t)
+manage_files_pattern(jenkins_t, jenkins_var_run_t, jenkins_var_run_t)
+manage_sock_files_pattern(jenkins_t, jenkins_tmp_t, jenkins_tmp_t)
+files_tmp_filetrans(jenkins_t, jenkins_tmp_t, { dir file lnk_file })
+files_pid_filetrans(jenkins_t, jenkins_var_run_t, file)
+libs_exec_ldconfig(jenkins_t)
+# ps -A
+kernel_list_proc(jenkins_t)
+domain_read_all_domains_state(jenkins_t)
+# su & etc
+auth_read_passwd(jenkins_t)
+gen_require(`type proc_t;')
+read_files_pattern(jenkins_t, proc_t, proc_t)
+search_dirs_pattern(jenkins_t, proc_t, proc_t)
+# allows
+allow jenkins_t self:process { execmem setsched };
+allow jenkins_t self:capability { audit_write kill setgid setuid };
+allow jenkins_t self:capability2 block_suspend;
+allow jenkins_t self:key write;
+allow jenkins_t self:netlink_audit_socket { create_socket_perms nlmsg_relay };
+allow jenkins_t jenkins_tmp_t:file { execute execute_no_trans };
+# allow http connect to jenkins
+optional_policy(`
+	gen_require(`type httpd_t;')
+	corenet_tcp_connect_jenkins_port(httpd_t)
+	jenkins_search_cache(httpd_t)
+	jenkins_read_cache_files(httpd_t)
+	jenkins_read_lib_files(httpd_t)
+')
+

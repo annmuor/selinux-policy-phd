@@ -1,0 +1,10 @@
+/etc/rc\.d/init\.d/jenkins	--	gen_context(system_u:object_r:jenkins_exec_t,s0)
+
+/var/cache/jenkins(/.*)?		gen_context(system_u:object_r:jenkins_cache_t,s0)
+
+/var/lib/jenkins(/.*)?		gen_context(system_u:object_r:jenkins_var_lib_t,s0)
+
+/var/lib/jenkins/(/.*)?		gen_context(system_u:object_r:jenkins_var_lib_t,s0)
+
+/var/log/jenkins(/.*)?		gen_context(system_u:object_r:jenkins_log_t,s0)
+/run/jenkins\.pid -- gen_context(system_u:object_r:jenkins_var_run_t,s0)
