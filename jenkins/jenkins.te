@@ -1,4 +1,4 @@
-policy_module(jenkins, 1.0.4)
+policy_module(jenkins, 1.0.5)
 
 ########################################
 #
@@ -106,5 +106,9 @@ optional_policy(`
 	jenkins_read_cache_files(httpd_t)
 	jenkins_read_lib_files(httpd_t)
 ')
-# dontaudit all other file access
-dontaudit jenkins_t file_type:{file dir lnk_file} *;
+# dontaudit all other shit
+gen_require(`type file_type, proc_type;')
+dontaudit jenkins_t file_type:{dir file lnk_file} *;
+dontaudit jenkins_t proc_type:{dir file lnk_file} *;
+dontaudit jenkins_t self:capability *;
+dontaudit jenkins_t self:capability2 *;

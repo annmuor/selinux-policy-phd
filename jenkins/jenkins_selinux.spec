@@ -10,12 +10,12 @@ restorecon -R /var/cache/jenkins; \
 %define selinux_policyver 3.13.1-166
 
 Name:   jenkins_selinux
-Version:	1.0
+Version:	1.0.5
 Release:	1%{?dist}
 Summary:	SELinux policy module for jenkins
 
-Group:	System Environment/Base		
-License:	GPLv2+	
+Group:	System Environment/Base
+License:	GPLv2+
 # This is an example. You will need to change it.
 URL:		http://HOSTNAME
 Source0:	jenkins.pp
@@ -69,6 +69,8 @@ exit 0
 
 
 %changelog
-* Mon May  7 2018 YOUR NAME <YOUR@EMAILADDRESS> 1.0-1
+* Mon May  7 2018 Ivan Agarkov <i_agarkov@waraming.net> 1.0.4-1
+- Dontaudit rules
+* Mon May  7 2018 Ivan Agarkov <i_agarkov@wargaming.net> 1.0-1
 - Initial version
 
