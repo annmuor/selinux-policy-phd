@@ -89,10 +89,6 @@ optional_policy(`
     typeattribute sa_t confined_iptables_type;
     typeattribute sa_sudo_t confined_iptables_type;
 ')
-# can list srv ssl
-optional_policy(`
-  can_list_srv_ssl({sa_t sa_sudo_t})
-')
 # run rpm
 optional_policy(`
     rpm_run(sa_t, sa_r)
