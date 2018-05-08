@@ -110,10 +110,6 @@ optional_policy(`
     read_files_pattern({sa_t sa_sudo_t}, puppet_var_lib_t, puppet_var_lib_t)
     domtrans_pattern({sa_t sa_sudo_t}, puppetagent_exec_t, puppetagent_t)
 ')
-# ifconfig-local
-optional_policy(`
-  ifconfig_restricted_domain({sa_t sa_sudo_t}, sa_r)
-')
 
 # docker policy
 optional_policy(`
