@@ -1,0 +1,130 @@
+# SA/semi-admin policy module
+# Main policy module for all ssh users
+# (C) Ivan Agarkov, 2017
+policy_module(sa, 1.0.37)
+gen_require(`
+    attribute non_security_file_type;
+    attribute domain;
+')
+role sa_r;
+userdom_unpriv_user_template(sa)
+sudo_role_template(sa, sa_r, sa_t)
+screen_role_template(sa, sa_r, sa_t)
+allow {sa_t sa_sudo_t} self:capability { dac_read_search dac_override kill setuid sys_ptrace sys_resource };
+# allow to kill any
+allow {sa_t sa_sudo_t} domain:process { sigchld sigkill sigstop signull signal  getsched getsession getpgid getcap getattr siginh setrlimit rlimitinh };
+files_search_pids({sa_t sa_sudo_t})
+can_exec({sa_t sa_sudo_t}, non_security_file_type)
+read_files_pattern({sa_t sa_sudo_t}, non_security_file_type, non_security_file_type)
+list_dirs_pattern({sa_t sa_sudo_t}, non_security_file_type, non_security_file_type)
+logging_read_audit_config({sa_t sa_sudo_t})
+logging_read_audit_log({sa_t sa_sudo_t})
+# selinux permissions
+selinux_get_enforce_mode(sa_t)
+selinux_get_enforce_mode(sa_sudo_t)
+selinux_read_policy({sa_t sa_sudo_t})
+seutil_read_module_store({sa_t sa_sudo_t})
+# allow dmesg
+dmesg_exec(sa_t)
+# allow unconfined run as
+optional_policy(`
+    gen_require(`
+      type unconfined_t;
+      role unconfined_r;
+    ')
+    allow unconfined_r sa_r;
+    allow unconfined_t sa_t:process transition;
+')
+optional_policy(`
+  gen_require(`
+    type kernel_t;
+    role system_r;
+  ')
+  allow system_r sa_r;
+  allow kernel_t sa_t:process transition;
+')
+gen_require(`
+  type proc_t;
+  attribute domain;
+')
+read_files_pattern({sa_t sa_sudo_t}, proc_t, domain)
+list_dirs_pattern({sa_t sa_sudo_t}, proc_t, domain)
+
+optional_policy(`
+    gen_require(`
+        type sshd_t;
+    ')
+    allow sa_t sshd_t:process signull;
+')
+
+optional_policy(`
+#  cron_common_crontab_template(sa)
+  cron_role(sa_r, sa_t)
+  cron_admin_role(sa_r, sa_sudo_t)
+')
+optional_policy(`
+# systemctl start, stop, restart, reload, status
+    ifdef(`systemd_status_all_unit_files', `systemd_status_all_unit_files({sa_t sa_sudo_t})')
+    ifdef(`systemd_start_all_services', `systemd_start_all_services({sa_t sa_sudo_t})')
+    ifdef(`systemd_reload_all_services', `systemd_reload_all_services({sa_t sa_sudo_t})')
+    ifdef(`init_status', `init_status({sa_t sa_sudo_t})')
+    ifdef(`init_reboot', `init_reboot({sa_t sa_sudo_t})')
+    ifdef(`init_enable_services', `init_enable_services({sa_t sa_sudo_t})')
+    ifdef(`init_disable_services', `init_disable_services({sa_t sa_sudo_t})')
+    ifdef(`init_reload_services', `init_reload_services({sa_t sa_sudo_t})')
+    ifdef(`init_start_transient_unit', `init_start_transient_unit({sa_t sa_sudo_t})')
+    ifdef(`init_stop_transient_unit', `init_stop_transient_unit({sa_t sa_sudo_t})')
+    ifdef(`init_reload_transient_unit', `init_reload_transient_unit({sa_t sa_sudo_t})')
+    ifdef(`init_status_transient_unit', `init_status_transient_unit({sa_t sa_sudo_t})')
+    ifdef(`init_dbus_chat', `init_dbus_chat({sa_t sa_sudo_t})')
+    ifdef(`init_dbus_chat_script', `init_dbus_chat_script({sa_t sa_sudo_t})')
+')
+# read-only iptables
+optional_policy(`
+    gen_require(`
+      type iptables_restricted_t;
+      attribute confined_iptables_type;
+    ')
+    role sa_r types iptables_restricted_t;
+    typeattribute sa_t confined_iptables_type;
+    typeattribute sa_sudo_t confined_iptables_type;
+')
+# can list srv ssl
+optional_policy(`
+  can_list_srv_ssl({sa_t sa_sudo_t})
+')
+# run rpm
+optional_policy(`
+    rpm_run(sa_t, sa_r)
+')
+# apache admin
+optional_policy(`
+    apache_admin(sa_t, sa_r)
+    gen_require(`type httpd_exec_t,httpd_t;')
+    role sa_r types httpd_t;
+    domtrans_pattern({sa_t sa_sudo_t}, httpd_exec_t, httpd_t)
+')
+# puppet agent
+optional_policy(`
+		gen_require(`
+        type puppetagent_t, puppetagent_exec_t, puppet_var_lib_t;
+    ')
+    list_dirs_pattern({sa_t sa_sudo_t}, puppet_var_lib_t, puppet_var_lib_t)
+    read_lnk_files_pattern({sa_t sa_sudo_t}, puppet_var_lib_t, puppet_var_lib_t)
+    read_files_pattern({sa_t sa_sudo_t}, puppet_var_lib_t, puppet_var_lib_t)
+    domtrans_pattern({sa_t sa_sudo_t}, puppetagent_exec_t, puppetagent_t)
+')
+# ifconfig-local
+optional_policy(`
+  ifconfig_restricted_domain({sa_t sa_sudo_t}, sa_r)
+')
+
+# docker policy
+optional_policy(`
+   gen_require(`
+     type docker_t, docker_var_run_t;
+   ')
+
+   stream_connect_pattern({sa_t sa_sudo_t}, docker_var_run_t, docker_var_run_t, docker_t)
+')
+gen_user(sa, users, sa_r)

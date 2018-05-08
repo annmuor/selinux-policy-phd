@@ -1,0 +1,470 @@
+.TH  "sa_selinux"  "8"  "sa" "mgrepl@redhat.com" "sa SELinux Policy documentation"
+.SH "NAME"
+sa_r \- \fBsa user role\fP - Security Enhanced Linux Policy
+
+.SH DESCRIPTION
+
+SELinux supports Roles Based Access Control (RBAC), some Linux roles are login roles, while other roles need to be transition into.
+
+.I Note:
+Examples in this man page will use the
+.B staff_u
+SELinux user.
+
+Non login roles are usually used for administrative tasks. For example, tasks that require root privileges.  Roles control which types a user can run processes with. Roles often have default types assigned to them.
+
+The default type for the sa_r role is sa_t.
+
+The
+.B newrole
+program to transition directly to this role.
+
+.B newrole -r sa_r -t sa_t
+
+.B sudo
+is the preferred method to do transition from one role to another.  You setup sudo to transition to sa_r by adding a similar line to the /etc/sudoers file.
+
+USERNAME ALL=(ALL) ROLE=sa_r TYPE=sa_t COMMAND
+
+.br
+sudo will run COMMAND as staff_u:sa_r:sa_t:LEVEL
+
+When using a a non login role, you need to setup SELinux so that your SELinux user can reach sa_r role.
+
+Execute the following to see all of the assigned SELinux roles:
+
+.B semanage user -l
+
+You need to add sa_r to the staff_u user.  You could setup the staff_u user to be able to use the sa_r role with a command like:
+
+.B $ semanage user -m -R 'staff_r system_r sa_r' staff_u
+
+
+.SH BOOLEANS
+SELinux policy is customizable based on least access required.  sa policy is extremely flexible and has several booleans that allow you to manipulate the policy and run sa with the tightest access possible.
+
+
+.PP
+If you want to allow users to resolve user passwd entries directly from ldap rather then using a sssd server, you must turn on the authlogin_nsswitch_use_ldap boolean. Disabled by default.
+
+.EX
+.B setsebool -P authlogin_nsswitch_use_ldap 1
+
+.EE
+
+.PP
+If you want to deny user domains applications to map a memory region as both executable and writable, this is dangerous and the executable should be reported in bugzilla, you must turn on the deny_execmem boolean. Disabled by default.
+
+.EX
+.B setsebool -P deny_execmem 1
+
+.EE
+
+.PP
+If you want to deny any process from ptracing or debugging any other processes, you must turn on the deny_ptrace boolean. Disabled by default.
+
+.EX
+.B setsebool -P deny_ptrace 1
+
+.EE
+
+.PP
+If you want to allow all domains write to kmsg_device, while kernel is executed with systemd.log_target=kmsg parameter, you must turn on the domain_can_write_kmsg boolean. Disabled by default.
+
+.EX
+.B setsebool -P domain_can_write_kmsg 1
+
+.EE
+
+.PP
+If you want to allow all domains to use other domains file descriptors, you must turn on the domain_fd_use boolean. Enabled by default.
+
+.EX
+.B setsebool -P domain_fd_use 1
+
+.EE
+
+.PP
+If you want to allow all domains to have the kernel load modules, you must turn on the domain_kernel_load_modules boolean. Disabled by default.
+
+.EX
+.B setsebool -P domain_kernel_load_modules 1
+
+.EE
+
+.PP
+If you want to allow all domains to execute in fips_mode, you must turn on the fips_mode boolean. Enabled by default.
+
+.EX
+.B setsebool -P fips_mode 1
+
+.EE
+
+.PP
+If you want to enable reading of urandom for all domains, you must turn on the global_ssp boolean. Disabled by default.
+
+.EX
+.B setsebool -P global_ssp 1
+
+.EE
+
+.PP
+If you want to allow confined applications to run with kerberos, you must turn on the kerberos_enabled boolean. Disabled by default.
+
+.EX
+.B setsebool -P kerberos_enabled 1
+
+.EE
+
+.PP
+If you want to allow logging in and using the system from /dev/console, you must turn on the login_console_enabled boolean. Enabled by default.
+
+.EX
+.B setsebool -P login_console_enabled 1
+
+.EE
+
+.PP
+If you want to allow system to run with NIS, you must turn on the nis_enabled boolean. Disabled by default.
+
+.EX
+.B setsebool -P nis_enabled 1
+
+.EE
+
+.PP
+If you want to disallow programs, such as newrole, from transitioning to administrative user domains, you must turn on the secure_mode boolean. Disabled by default.
+
+.EX
+.B setsebool -P secure_mode 1
+
+.EE
+
+.PP
+If you want to allow unconfined executables to make their stack executable.  This should never, ever be necessary. Probably indicates a badly coded executable, but could indicate an attack. This executable should be reported in bugzilla, you must turn on the selinuxuser_execstack boolean. Disabled by default.
+
+.EX
+.B setsebool -P selinuxuser_execstack 1
+
+.EE
+
+.PP
+If you want to allow ssh logins as sysadm_r:sysadm_t, you must turn on the ssh_sysadm_login boolean. Disabled by default.
+
+.EX
+.B setsebool -P ssh_sysadm_login 1
+
+.EE
+
+.PP
+If you want to allow the graphical login program to login directly as sysadm_r:sysadm_t, you must turn on the xdm_sysadm_login boolean. Disabled by default.
+
+.EX
+.B setsebool -P xdm_sysadm_login 1
+
+.EE
+
+.SH PORT TYPES
+SELinux defines port types to represent TCP and UDP ports.
+.PP
+You can see the types associated with a port by using the following command:
+
+.B semanage port -l
+
+.PP
+Policy governs the access confined processes have to these ports.
+SELinux sa policy is very flexible allowing users to setup their sa processes in as secure a method as possible.
+.PP
+The following port types are defined for sa:
+
+.EX
+.TP 5
+.B salt_port_t
+.TP 10
+.EE
+
+
+Default Defined Ports:
+tcp 4505,4506
+.EE
+
+.EX
+.TP 5
+.B sap_port_t
+.TP 10
+.EE
+
+
+Default Defined Ports:
+tcp 9875
+.EE
+udp 9875
+.EE
+
+.EX
+.TP 5
+.B saphostctrl_port_t
+.TP 10
+.EE
+
+
+Default Defined Ports:
+tcp 1128,1129
+.EE
+.SH "MANAGED FILES"
+
+The SELinux process type sa_t can manage files labeled with the following file types.  The paths listed are the default paths for these file types.  Note the processes UID still need to have DAC permissions.
+
+.br
+.B httpd_config_t
+
+	/etc/httpd(/.*)?
+.br
+	/etc/nginx(/.*)?
+.br
+	/etc/apache(2)?(/.*)?
+.br
+	/etc/cherokee(/.*)?
+.br
+	/etc/lighttpd(/.*)?
+.br
+	/etc/apache-ssl(2)?(/.*)?
+.br
+	/var/lib/openshift/\.httpd\.d(/.*)?
+.br
+	/etc/opt/rh/rh-nginx18/nginx(/.*)?
+.br
+	/var/lib/stickshift/\.httpd\.d(/.*)?
+.br
+	/etc/vhosts
+.br
+	/etc/thttpd\.conf
+.br
+
+.br
+.B httpd_lock_t
+
+
+.br
+.B httpd_log_t
+
+	/srv/([^/]*/)?www/logs(/.*)?
+.br
+	/var/www(/.*)?/logs(/.*)?
+.br
+	/var/log/glpi(/.*)?
+.br
+	/var/log/cacti(/.*)?
+.br
+	/var/log/httpd(/.*)?
+.br
+	/var/log/nginx(/.*)?
+.br
+	/var/log/apache(2)?(/.*)?
+.br
+	/var/log/horizon(/.*)?
+.br
+	/var/log/php-fpm(/.*)?
+.br
+	/var/log/cherokee(/.*)?
+.br
+	/var/log/lighttpd(/.*)?
+.br
+	/var/log/suphp\.log.*
+.br
+	/var/log/thttpd\.log.*
+.br
+	/var/log/apache-ssl(2)?(/.*)?
+.br
+	/var/log/cgiwrap\.log.*
+.br
+	/var/www/stickshift/[^/]*/log(/.*)?
+.br
+	/var/log/graphite-web(/.*)?
+.br
+	/var/www/miq/vmdb/log(/.*)?
+.br
+	/var/log/roundcubemail(/.*)?
+.br
+	/var/log/php_errors\.log.*
+.br
+	/var/opt/rh/rh-nginx18/log(/.*)?
+.br
+	/var/log/dirsrv/admin-serv(/.*)?
+.br
+	/var/lib/openshift/\.log/httpd(/.*)?
+.br
+	/var/www/openshift/console/log(/.*)?
+.br
+	/var/www/openshift/broker/httpd/logs(/.*)?
+.br
+	/var/www/openshift/console/httpd/logs(/.*)?
+.br
+	/etc/httpd/logs
+.br
+
+.br
+.B httpd_modules_t
+
+	/usr/lib/httpd(/.*)?
+.br
+	/usr/lib/apache(/.*)?
+.br
+	/usr/lib/cherokee(/.*)?
+.br
+	/usr/lib/lighttpd(/.*)?
+.br
+	/usr/lib/apache2/modules(/.*)?
+.br
+	/etc/httpd/modules
+.br
+
+.br
+.B httpd_php_tmp_t
+
+
+.br
+.B httpd_script_exec_type
+
+
+.br
+.B httpd_suexec_tmp_t
+
+
+.br
+.B httpd_tmp_t
+
+	/var/run/user/apache(/.*)?
+.br
+	/var/www/openshift/console/tmp(/.*)?
+.br
+
+.br
+.B httpd_unit_file_t
+
+	/usr/lib/systemd/system/httpd.*
+.br
+	/usr/lib/systemd/system/jetty.*
+.br
+	/usr/lib/systemd/system/nginx.*
+.br
+	/usr/lib/systemd/system/thttpd.*
+.br
+	/usr/lib/systemd/system/php-fpm.*
+.br
+
+.br
+.B httpd_var_run_t
+
+	/var/run/wsgi.*
+.br
+	/var/run/mod_.*
+.br
+	/var/run/httpd.*
+.br
+	/var/run/nginx.*
+.br
+	/var/run/apache.*
+.br
+	/var/run/php-fpm(/.*)?
+.br
+	/var/run/lighttpd(/.*)?
+.br
+	/var/lib/php/session(/.*)?
+.br
+	/var/lib/php/wsdlcache(/.*)?
+.br
+	/var/run/dirsrv/admin-serv.*
+.br
+	/var/opt/rh/rh-nginx18/run/nginx(/.*)?
+.br
+	/var/www/openshift/broker/httpd/run(/.*)?
+.br
+	/var/www/openshift/console/httpd/run(/.*)?
+.br
+	/opt/dirsrv/var/run/dirsrv/dsgw/cookies(/.*)?
+.br
+	/var/run/thttpd\.pid
+.br
+	/var/run/gcache_port
+.br
+	/var/run/cherokee\.pid
+.br
+
+.br
+.B httpdcontent
+
+
+.br
+.B public_content_rw_t
+
+	/var/spool/abrt-upload(/.*)?
+.br
+
+.br
+.B systemd_passwd_var_run_t
+
+	/var/run/systemd/ask-password(/.*)?
+.br
+	/var/run/systemd/ask-password-block(/.*)?
+.br
+
+.br
+.B user_home_t
+
+	/home/[^/]+/.+
+.br
+
+.br
+.B user_tmp_t
+
+	/dev/shm/mono.*
+.br
+	/var/run/user(/.*)?
+.br
+	/tmp/\.X11-unix(/.*)?
+.br
+	/tmp/\.ICE-unix(/.*)?
+.br
+	/dev/shm/pulse-shm.*
+.br
+	/tmp/\.X0-lock
+.br
+	/tmp/hsperfdata_root
+.br
+	/var/tmp/hsperfdata_root
+.br
+	/home/[^/]+/tmp
+.br
+	/home/[^/]+/\.tmp
+.br
+	/tmp/gconfd-[^/]+
+.br
+
+.SH "COMMANDS"
+.B semanage fcontext
+can also be used to manipulate default file context mappings.
+.PP
+.B semanage permissive
+can also be used to manipulate whether or not a process type is permissive.
+.PP
+.B semanage module
+can also be used to enable/disable/install/remove policy modules.
+
+.B semanage port
+can also be used to manipulate the port definitions
+
+.B semanage boolean
+can also be used to manipulate the booleans
+
+.PP
+.B system-config-selinux
+is a GUI tool available to customize SELinux policy settings.
+
+.SH AUTHOR
+This manual page was auto-generated using
+.B "sepolicy manpage".
+
+.SH "SEE ALSO"
+selinux(8), sa(8), semanage(8), restorecon(8), chcon(1), sepolicy(8)
+, setsebool(8)
